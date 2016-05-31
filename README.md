@@ -14,7 +14,7 @@ Run multiple commands using glob patterns.
 * Runs one shell command per file, based on a extended `glob` (see [globby](https://github.com/sindresorhus/globby#globbing-patterns)).
 * Defaults to running node concurrently.
 * Use complex commands using template strings.
-* Doesn't require a bash scripts.
+* Doesn't require bash scripts.
 * Prefers locally installed binaries by default (see [execa](https://github.com/sindresorhus/execa#preferlocal)).
 * Promise API interface.
 
