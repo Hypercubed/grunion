@@ -1,6 +1,6 @@
 {
   "name": "grunion",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Run multiple commands using glob patterns.",
   "main": "index.js",
   "jsnext:main": "src/index.js",
