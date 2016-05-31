@@ -1,7 +1,7 @@
 {
   "name": "grunion",
   "version": "0.0.0",
-  "description": "",
+  "description": "Run multiple commands using glob patterns.",
   "main": "index.js",
   "jsnext:main": "src/index.js",
   "bin": {
@@ -43,5 +43,22 @@
     "globby": "^4.1.0",
     "lodash.template": "^4.2.5",
     "meow": "^3.7.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hypercubed/grunion.git"
+  },
+  "keywords": [
+    "glob",
+    "node",
+    "run",
+    "test"
+  ],
+  "bugs": {
+    "url": "https://github.com/Hypercubed/grunion/issues"
+  },
+  "homepage": "https://github.com/Hypercubed/grunion#readme"
 }
