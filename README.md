@@ -76,7 +76,20 @@ Runs browserify on each file matching `/src/*.js` with output to `/out/*.js`.
 
 ## API
 
-TBD
+TBR
+
+## Recipies
+
+Coming soon...
+
+## Things that go well with Grunion
+
+- [Tape](https://github.com/substack/tape)
+- [Blue-tape](https://www.npmjs.com/package/blue-tape)
+- [babel-tape-runner](https://github.com/wavded/babel-tape-runner)
+- [babel-cli](https://github.com/babel/babel/tree/master/packages)
+- [Browserify](https://github.com/substack/node-browserify)
+- [Testling](https://github.com/substack/testling)
 
 ## License
 
