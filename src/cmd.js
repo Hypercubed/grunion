@@ -12,10 +12,11 @@ Usage
 Options,
 
   --run, -r          Command template to run (default: "node <%= file.path %>")
-  --fail-fast        Stop after first failure
-  --serial, -s       Run serially (same as -m 1)
-  --max, -m          Maximum number of files running at the same time
-  --dry-run          Don't actually run each command (use with DEBUG=grunion)
+  --fail-fast        Stop after first failure (default: false)
+  --serial, -s       Run serially (same as -m 1, default: false)
+  --max, -m          Maximum number of commands running at the same time (default: 10)
+  --dry-run          Don't actually run each command (use with DEBUG=grunion, default: false)
+  --local            Prefer locally installed binaries (default: true)
 
 Examples
   grunion a.js b.js
@@ -30,6 +31,7 @@ Examples
       'serial': false,
       'local': true,
       'fail-fast': false,
+      'dry-run': false,
       'max': 10
     },
     string: [

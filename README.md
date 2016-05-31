@@ -11,10 +11,12 @@ Run multiple commands using glob patterns.
 
 ## Features
 
-* Runs one shell command per file, based on a glob.
-* Defaults to running node.
+* Runs one shell command per file, based on a extended `glob` (see [globby](https://github.com/sindresorhus/globby#globbing-patterns)).
+* Defaults to running node concurrently.
 * Use complex commands using template strings.
-* Does require a bash script.
+* Doesn't require a bash scripts.
+* Prefers locally installed binaries by default (see [execa](https://github.com/sindresorhus/execa#preferlocal)).
+* Promise API interface.
 
 ** Note: not yet tested on windows **
 
@@ -33,10 +35,11 @@ Usage
 Options,
 
   --run, -r          Command template to run (default: "node <%= file.path %>")
-  --fail-fast        Stop after first failure
-  --serial, -s       Run serially (same as -m 1)
-  --max, -m          Maximum number of commands running at the same time
-  --dry-run          Don't actually run each command (use with DEBUG=grunion)
+  --fail-fast        Stop after first failure (default: false)
+  --serial, -s       Run serially (same as -m 1, default: false)
+  --max, -m          Maximum number of commands running at the same time (default: 10)
+  --dry-run          Don't actually run each command (use with DEBUG=grunion, default: false)
+  --local            Prefer locally installed binaries (default: true)
 ```
 
 Examples:
