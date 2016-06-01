@@ -102,6 +102,5 @@ test('grunion - echo - serial', async t => {
     ['./test/fixtures/*.js', '--run', 'echo <%= file.path %>', '--serial'],
     {preferLocal: true}
   );
-  console.log(result);
   t.is(result.stdout, './test/fixtures/a-pass.js\n./test/fixtures/b-pass.js\n./test/fixtures/c-fail.js\n./test/fixtures/d.js');
 });
