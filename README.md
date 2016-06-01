@@ -18,7 +18,7 @@ Run multiple commands using glob patterns.
 * Prefers locally installed binaries by default (see [execa](https://github.com/sindresorhus/execa#preferlocal)).
 * Promise API interface.
 
-** Note: not yet tested on windows **
+**Tested on mac, windows cmd, and cygwin**
 
 ## Install
 

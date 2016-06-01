@@ -1,5 +1,5 @@
-import grunion from '..';
 import test from 'ava';
+import grunion from '..';
 
 process.chdir('../');
 
