@@ -1,18 +1,26 @@
 'use strict';
+
 const path = require('path');
 const globby = require('globby');
-const execa = require('execa');
+const shell = require('execa').shell;
 const debug = require('debug')('grunion');
 const template = require('lodash.template');
+const Promise = require('bluebird');
 
+// API defaults, may be different from CLI defaults
 const defaults = {
   run: 'node <%= file.path %>',
   serial: false,
   local: true,
   failFast: false,
   max: 10,
-  showStdout: true,
-  showStderr: true
+  cache: false,
+  output() {}
+};
+
+const EMPTY = {
+  stdout: '',
+  stderr: ''
 };
 
 module.exports = api;
@@ -21,11 +29,12 @@ function api(input, opts = {}) {
   opts = Object.assign({}, defaults, opts);
 
   const globbyOpts = {
-
+    // TBD
   };
 
   const execaOpts = {
-    preferLocal: opts.local
+    preferLocal: opts.local,
+    stripEof: false
   };
 
   const max = (opts.serial) ? 1 : Number(opts.max);
@@ -36,80 +45,64 @@ function api(input, opts = {}) {
 
   debug('Concurancy set to %s', max);
 
-  const compiledCmd = template(opts.run);
+  const generateCmd = template(opts.run);
 
-  const paths = globby.sync(input, globbyOpts);
+  const state = {
+    failed: 0,
+    success: 0,
+    results: []
+  };
 
-  if (paths.length < 1) {
-    throw new Error('Couldn\'t find any files to grun');
-  }
-
-  return new Promise(function (resolve, reject) {
-    const state = {
-      running: 0,
-      failed: 0,
-      success: 0
-    };
-
-    next();
-
-    function next() {
-      if (opts.failFast && state.failed > 0) {
-        return reject(state);
+  return Promise.resolve(globby(input, globbyOpts))
+    .then(filepaths => {
+      state.pending = filepaths.length;
+      if (state.pending === 0 && !opts.silent) {
+        console.error('Nothing to grun');
       }
-      if (state.running < max && paths.length > 0) {
-        return run();
-      }
-      if (state.running === 0 && paths.length === 0) {
-        resolve(state);
-      }
-    }
+      return filepaths;
+    })
+    .map(filepath => {
+      const scope = {
+        file: Object.assign(path.parse(filepath), {
+          path: filepath
+        })
+      };
 
-    function run() {
-      const filepath = paths.shift();
+      scope.cmd = generateCmd(scope);
 
-      const file = Object.assign(path.parse(filepath), {
-        path: filepath
-      });
-
-      const cmd = compiledCmd({
-        file
-      });
-
-      state.running++;
-      debug('Running %s', cmd);
+      debug('Running %s', scope.cmd);
 
       if (opts.dryRun) {
-        state.running--;
         state.success++;
+        state.pending--;
+        const result = Object.assign({}, EMPTY, scope);
+        opts.output(result);
         debug('Finished dry-run %s', filepath);
-        return next();
+        return null;
       }
 
-      execa.shell(cmd, execaOpts)
+      return shell(scope.cmd, execaOpts)
         .then(result => {
-          state.running--;
-          state.success++;
           debug('Finished %s', filepath);
-          if (opts.showStdout) {
-            console.log(result.stdout);
-          }
-          return next();
+          state.success++;
+          state.pending--;
+          result = Object.assign(result, scope);
+          opts.output(result);
+          state.results.push(opts.cache ? result : scope);
         })
         .catch(result => {
-          state.running--;
-          state.failed++;
           debug('Failed %s', result);
-          if (opts.showStdout) {
-            console.log(result.stdout);
+          state.failed++;
+          state.pending--;
+          result = Object.assign({}, result, scope);
+          opts.output(result);
+          state.results.push(opts.cache ? result : scope);
+          if (opts.failFast) {
+            throw state;
           }
-          if (opts.showStderr) {
-            console.error(result.stderr);
-          }
-          return next();
         });
-
-      return next();
-    }
-  });
+    }, {concurrency: max})
+    .then(() => {
+      return state;
+    });
 }

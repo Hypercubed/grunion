@@ -3,7 +3,7 @@
 
 const debug = require('debug')('grunion');
 const meow = require('meow');
-const api = require('..');
+const api = require('./api.js');
 
 const cli = meow(`
 Usage
@@ -17,6 +17,10 @@ Options,
   --max, -m          Maximum number of commands running at the same time (default: 10)
   --dry-run          Don't actually run each command (use with DEBUG=grunion, default: false)
   --local            Prefer locally installed binaries (default: true)
+  --silent           Don't write output (default: falues)
+  --headings         Write the file names and commands (default: true)
+  --summary          Write the summary (default: true)
+  --raw              Only write stdout and stderr (same as --no-headings --no-summary --no-silent, default: false)
 
 Examples
   grunion a.js b.js
@@ -32,7 +36,11 @@ Examples
       'local': true,
       'fail-fast': false,
       'dry-run': false,
-      'max': 10
+      'max': 10,
+      'silent': false,
+      'headings': true,
+      'summary': true,
+      'raw': false
     },
     string: [
       '_',
@@ -43,7 +51,11 @@ Examples
       'fail-fast',
       'local',
       'serial',
-      'dry-run'
+      'dry-run',
+      'silent',
+      'headings',
+      'summary',
+      'raw'
     ],
     alias: {
       s: 'serial',
@@ -52,12 +64,55 @@ Examples
     }
   });
 
+const LF = '\n';
 debug('Debugging enabled');
 
-api(cli.input, cli.flags)
+const opts = Object.assign({
+  output
+}, cli.flags);
+
+if (opts.raw) {
+  opts.headings = false;
+  opts.summary = false;
+  opts.silent = false;
+}
+
+function output(result) {
+  if (opts.headings) {
+    process.stdout.write(LF);
+    process.stdout.write(`> ${result.file.path}`);
+    process.stdout.write(LF);
+    process.stdout.write(`> ${result.cmd}`);
+    process.stdout.write(LF + LF);
+  }
+  if (!opts.silent) {
+    process.stdout.write(clean(result.stdout));
+    process.stderr.write(clean(result.stderr));
+  }
+}
+
+function clean(text) {
+  if (text.length > 0 && text[text.length - 1] !== '\n') {
+    text += '\n';
+  }
+  return text;
+}
+
+function outputSumary(state) {
+  if (opts.summary) {
+    process.stdout.write(`${LF} - ${state.success} passed`);
+    process.stdout.write(`${LF} - ${state.failed} failed`);
+    process.stdout.write(`${LF} - ${state.pending} aborted`);
+    process.stdout.write(LF);
+  }
+}
+
+api(cli.input, opts)
   .then(r => {
+    outputSumary(r);
     process.exit(r.failed > 0 ? 1 : 0);
   })
-  .catch(() => {
+  .catch(r => {
+    outputSumary(r);
     process.exit(1);
   });

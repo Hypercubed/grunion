@@ -13,11 +13,12 @@
     "bin"
   ],
   "scripts": {
-    "pretest": "npm run build && xo",
+    "pretest": "xo",
     "test": "ava",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "babel src -d dist",
+    "prepublish": "npm run build",
     "version": "chg release -y && git add -A CHANGELOG.md"
   },
   "author": "J. Harshbarger",
@@ -37,6 +38,7 @@
     ]
   },
   "dependencies": {
+    "bluebird": "^3.4.0",
     "debug": "^2.2.0",
     "execa": "^0.4.0",
     "globby": "^4.1.0",

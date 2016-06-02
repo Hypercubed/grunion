@@ -2,7 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* API: added cache option
+* CLI: added silent option
+* CLI: added headings option
+* CLI: added summary option
+* CLI: added raw option
+* API: Added output option
 
 --------------------
 
