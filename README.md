@@ -4,9 +4,9 @@ Run multiple commands using glob patterns.
 
 ## Why Grunion?
 
-* Sometimes you want to run multiple commands in separate processes.
+* Sometimes you want to run multiple scripts in separate processes.
 * node, babel-node only run one file at a time.
-* tape, blue-tap run globs of files in a single process.
+* tape and blue-tap run globs of files in a single process.
 * AVA is not a generic runner.
 
 ## Features
@@ -40,6 +40,10 @@ Options,
   --max, -m          Maximum number of commands running at the same time (default: 10)
   --dry-run          Don't actually run each command (use with DEBUG=grunion, default: false)
   --local            Prefer locally installed binaries (default: true)
+  --silent           Don't write output (default: false)
+  --headings         Write the file names and commands (default: true)
+  --summary          Write the summary (default: true)
+  --raw              Only write stdout and stderr (same as --no-headings --no-summary --no-silent, default: false)
 ```
 
 Examples:

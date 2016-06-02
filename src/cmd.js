@@ -17,7 +17,7 @@ Options,
   --max, -m          Maximum number of commands running at the same time (default: 10)
   --dry-run          Don't actually run each command (use with DEBUG=grunion, default: false)
   --local            Prefer locally installed binaries (default: true)
-  --silent           Don't write output (default: falues)
+  --silent           Don't write output (default: false)
   --headings         Write the file names and commands (default: true)
   --summary          Write the summary (default: true)
   --raw              Only write stdout and stderr (same as --no-headings --no-summary --no-silent, default: false)
