@@ -25,8 +25,8 @@ const EMPTY = {
 
 module.exports = api;
 
-function api(input, opts = {}) {
-  opts = Object.assign({}, defaults, opts);
+function api(input, opts) {
+  opts = Object.assign({}, defaults, opts || {});
 
   const globbyOpts = {
     // TBD
