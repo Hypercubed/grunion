@@ -2,6 +2,12 @@
 
 Run multiple commands using glob patterns.
 
+[![version](https://img.shields.io/npm/v/grunion.svg)](https://www.npmjs.org/package/grunion)
+[![status](https://travis-ci.org/Hypercubed/grunion.svg)](https://travis-ci.org/Hypercubed/grunion)
+[![dependencies](https://david-dm.org/Hypercubed/grunion.svg)](https://david-dm.org/Hypercubed/grunion)
+[![devDependencies](https://david-dm.org/Hypercubed/grunion/dev-status.svg)](https://david-dm.org/Hypercubed/grunion#info=devDependencies)
+![node](https://img.shields.io/node/v/grunion.svg)
+
 ## Why Grunion?
 
 * Sometimes you want to run multiple scripts in separate processes.

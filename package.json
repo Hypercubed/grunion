@@ -46,6 +46,9 @@
     "lodash.template": "^4.2.5",
     "meow": "^3.7.0"
   },
+  "engines": {
+    "node": ">=0.12"
+  },
   "directories": {
     "test": "test"
   },
