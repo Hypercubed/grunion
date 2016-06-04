@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* Prevent premature exit
+_(none)_
 
 --------------------
+
+## 1.1.1 (2016-06-04)
+* Prevent premature exit
 
 ## 1.1.0 (2016-06-03)
 * API: added cache option
