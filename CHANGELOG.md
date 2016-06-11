@@ -2,10 +2,13 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* API: Added delay option
-* CLI: Fixed example in help
+_(none)_
 
 --------------------
+
+## 1.2.0 (2016-06-11)
+* API: Added delay option
+* CLI: Fixed example in help
 
 ## 1.1.1 (2016-06-04)
 * Prevent premature exit
