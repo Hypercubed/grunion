@@ -2,7 +2,8 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* API: Added delay option
+* CLI: Fixed example in help
 
 --------------------
 
@@ -10,13 +11,12 @@ _(none)_
 * Prevent premature exit
 
 ## 1.1.0 (2016-06-03)
-* API: added cache option
-* CLI: added silent option
-* CLI: added headings option
-* CLI: added summary option
-* CLI: added raw option
+* API: Added cache option
+* CLI: Added silent option
+* CLI: Added headings option
+* CLI: Added summary option
+* CLI: Added raw option
 * API: Added output option
 
 ## 1.0.0 (2016-05-31)
 _(none)_
-

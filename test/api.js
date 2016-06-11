@@ -11,11 +11,12 @@ test('grunion - all', async t => {
 
 test('grunion - all - fail-fast', async t => {
   try {
-    const r = await grunion(['./test/fixtures/*.js'], {failFast: true});
-    console.log(r);
+    await grunion(['./test/fixtures/*.js'], {failFast: true, serial: true});
     t.fail();
   } catch (r) {
     t.is(r.failed, 1);
+    t.is(r.success, 1);
+    t.is(r.aborted, 2);
   }
 });
 
@@ -41,4 +42,23 @@ test('grunion - fail', async t => {
   const r = await grunion(['./test/fixtures/*-fail.js']);
   t.is(r.success, 0);
   t.is(r.failed, 1);
+});
+
+test('grunion - cache', async t => {
+  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', cache: true});
+  t.is(r.success, 4);
+  t.is(r.failed, 0);
+  t.deepEqual(r.results.map(d => d.stdout), ['a-pass.js\n', 'b-pass.js\n', 'c-fail.js\n', 'd.js\n']);
+});
+
+test('grunion - wait', async t => {
+  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', serial: true, wait: 100});
+  t.is(r.success, 4);
+  t.is(r.failed, 0);
+});
+
+test('grunion - wait - max 2', async t => {
+  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', max: 2, wait: 100});
+  t.is(r.success, 4);
+  t.is(r.failed, 0);
 });

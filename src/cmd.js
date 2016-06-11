@@ -20,13 +20,14 @@ Options,
   --silent           Don't write output (default: falues)
   --headings         Write the file names and commands (default: true)
   --summary          Write the summary (default: true)
-  --raw              Only write stdout and stderr (same as --no-headings --)
+  --raw, -w          Only write stdout and stderr (same as --no-headings --no-summary --silent)
+  --delay            Delay N ms between runs (default: 0)
 
 Examples
   grunion a.js b.js
   grunion test-*.js
-  grunion -c "tape <%= file.path >" test-*.js --serial
-  grunion -c "browserify <%= file.path > --im ./out/<%= file.basename >" ./src/*.js
+  grunion -r "tape <%= file.path >" test-*.js --serial
+  grunion -r "browserify <%= file.path > --im ./out/<%= file.basename >" ./src/*.js
 
   `,
   {
@@ -40,12 +41,14 @@ Examples
       'silent': false,
       'headings': true,
       'summary': true,
-      'raw': false
+      'raw': false,
+      'delay': 0
     },
     string: [
       '_',
       'run',
-      'max'
+      'max',
+      'delay'
     ],
     boolean: [
       'fail-fast',
@@ -60,7 +63,8 @@ Examples
     alias: {
       s: 'serial',
       r: 'run',
-      m: 'max'
+      m: 'max',
+      w: 'raw'
     }
   });
 
@@ -102,7 +106,7 @@ function outputSumary(state) {
   if (opts.summary) {
     process.stdout.write(`${LF} - ${state.success} passed`);
     process.stdout.write(`${LF} - ${state.failed} failed`);
-    process.stdout.write(`${LF} - ${state.pending} aborted`);
+    process.stdout.write(`${LF} - ${state.aborted} aborted`);
     process.stdout.write(LF);
   }
 }

@@ -5,7 +5,7 @@ const globby = require('globby');
 const shell = require('execa').shell;
 const debug = require('debug')('grunion');
 const template = require('lodash.template');
-const Promise = require('bluebird');
+const {map, delay} = require('bluebird');
 
 // API defaults, may be different from CLI defaults
 const defaults = {
@@ -15,7 +15,8 @@ const defaults = {
   failFast: false,
   max: 10,
   cache: false,
-  output() {}
+  output() {},
+  wait: 0
 };
 
 const EMPTY = {
@@ -25,8 +26,11 @@ const EMPTY = {
 
 module.exports = api;
 
-function api(input, opts) {
-  opts = Object.assign({}, defaults, opts || {});
+async function api(input, opts = {}) {
+  opts = {
+    ...defaults,
+    ...opts
+  };
 
   const globbyOpts = {
     // TBD
@@ -38,71 +42,103 @@ function api(input, opts) {
   };
 
   const max = (opts.serial) ? 1 : Number(opts.max);
+  const wait = (opts.wait) ? Number(opts.wait) : 0;
 
   if (typeof max !== 'number' || max < 1) {
     throw new Error('Invalid maximum number of children');
   }
 
+  if (typeof wait !== 'number' || wait < 0) {
+    throw new Error('Invalid wait time');
+  }
+
   debug('Concurancy set to %s', max);
+  debug('Delay between runs set to %s', wait);
 
   const generateCmd = template(opts.run);
 
-  const state = {
-    failed: 0,
-    success: 0,
-    results: []
-  };
+  const filepaths = await globby(input, globbyOpts);
 
-  return Promise.resolve(globby(input, globbyOpts))
-    .then(filepaths => {
-      state.pending = filepaths.length;
-      if (state.pending === 0 && !opts.silent) {
-        console.error('Nothing to grun');
+  let failed = 0;
+  let success = 0;
+  let aborted = filepaths.length;
+  if (aborted === 0 && !opts.silent) {
+    console.error('Nothing to grun');
+  }
+
+  try {
+    const results = await map(filepaths, grun, {concurrency: max});
+    return {
+      aborted,
+      success,
+      failed,
+      results
+    };
+  } catch (e) {
+    throw e;
+  }
+
+  async function grun(filepath) {
+    const scope = {
+      file: {
+        path: filepath,
+        ...path.parse(filepath)
       }
-      return filepaths;
-    })
-    .map(filepath => {
-      const scope = {
-        file: Object.assign(path.parse(filepath), {
-          path: filepath
-        })
+    };
+
+    scope.cmd = generateCmd(scope);
+
+    debug('Running %s', scope.cmd);
+
+    if (opts.dryRun) {
+      success++;
+      aborted--;
+      scope.failed = false;
+      const result = {
+        ...EMPTY,
+        ...scope
       };
+      opts.output(result);
+      debug('Finished dry-run %s', filepath);
+      return result;
+    }
 
-      scope.cmd = generateCmd(scope);
-
-      debug('Running %s', scope.cmd);
-
-      if (opts.dryRun) {
-        state.success++;
-        state.pending--;
-        const result = Object.assign({}, EMPTY, scope);
-        opts.output(result);
-        debug('Finished dry-run %s', filepath);
-        return null;
+    let result = null;
+    try {
+      result = await shell(scope.cmd, execaOpts);
+      debug('Finished %s', filepath);
+      success++;
+      aborted--;
+      scope.failed = false;
+      result = {
+        ...result,
+        ...scope
+      };
+      opts.output(result);
+    } catch (err) {
+      debug('Failed %s', err);
+      failed++;
+      aborted--;
+      scope.failed = true;
+      result = {
+        ...err,
+        ...scope
+      };
+      opts.output(result);
+      if (opts.failFast) {
+        const state = {
+          aborted,
+          success,
+          failed
+        };
+        throw state;
       }
+    }
 
-      return shell(scope.cmd, execaOpts)
-        .then(result => {
-          debug('Finished %s', filepath);
-          state.success++;
-          state.pending--;
-          result = Object.assign(result, scope);
-          opts.output(result);
-          state.results.push(opts.cache ? result : scope);
-        })
-        .catch(result => {
-          debug('Failed %s', result);
-          state.failed++;
-          state.pending--;
-          result = Object.assign({}, result, scope);
-          opts.output(result);
-          state.results.push(opts.cache ? result : scope);
-          if (opts.failFast) {
-            throw state;
-          }
-        });
-    }, {concurrency: max})
-    .then(() => {
-      return state;
-    });
+    if (wait && wait > 0) {
+      await delay(wait);
+    }
+
+    return opts.cache ? result : scope;
+  }
 }

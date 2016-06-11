@@ -3,9 +3,11 @@ import execa from 'execa';
 
 process.chdir('../');
 
+const bin = './dist/cmd.js';
+
 test('grunion - pass', async t => {
   const result = await execa(
-    './src/cmd.js',
+    bin,
     ['./test/fixtures/*-pass.js'],
     {preferLocal: true}
   );
@@ -17,7 +19,7 @@ test('grunion - pass', async t => {
 
 test('grunion - fail', async t => {
   try {
-    await execa('./src/cmd.js',
+    await execa(bin,
      ['./test/fixtures/*.js'],
      {preferLocal: true}
    );
@@ -33,7 +35,7 @@ test('grunion - fail', async t => {
 test('grunion - fail - fail-fast', async t => {
   try {
     await execa(
-      './src/cmd.js',
+      bin,
       ['./test/fixtures/*.js', '--fail-fast'],
       {preferLocal: true}
     );
@@ -45,7 +47,7 @@ test('grunion - fail - fail-fast', async t => {
 
 test('grunion - pass - babel-node', async t => {
   const result = await execa(
-    './src/cmd.js',
+    bin,
     ['./test/fixtures/*-pass.js', '--run', 'babel-node <%= file.path %>'],
     {preferLocal: true}
   );
@@ -58,7 +60,7 @@ test('grunion - pass - babel-node', async t => {
 test('grunion - fail - babel-node', async t => {
   try {  // returns error
     await execa(
-      './src/cmd.js',
+      bin,
       ['./test/fixtures/*.js', '--run', 'babel-node <%= file.path %>'],
       {preferLocal: true}
     );
@@ -74,7 +76,7 @@ test('grunion - fail - babel-node', async t => {
 test('grunion - fail - fail-fast babel-node', async t => {
   try {
     await execa(
-      './src/cmd.js',
+      bin,
       ['./test/fixtures/*.js', '--run', 'babel-node <%= file.path %>', '--fail-fast'],
       {preferLocal: true}
     );
@@ -86,7 +88,7 @@ test('grunion - fail - fail-fast babel-node', async t => {
 
 test('grunion - echo', async t => {
   const result = await execa(
-    './src/cmd.js',
+    bin,
     ['./test/fixtures/*.js', '--run', 'echo <%= file.path %>'],
     {preferLocal: true}
   );
@@ -98,7 +100,7 @@ test('grunion - echo', async t => {
 
 test('grunion - echo - serial', async t => {
   const result = await execa(
-    './src/cmd.js',
+    bin,
     ['./test/fixtures/*.js', '--run', 'echo <%= file.path %>', '--serial'],
     {preferLocal: true}
   );
