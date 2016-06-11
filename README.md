@@ -49,7 +49,8 @@ Options,
   --silent           Don't write output (default: false)
   --headings         Write the file names and commands (default: true)
   --summary          Write the summary (default: true)
-  --raw              Only write stdout and stderr (same as --no-headings --no-summary --no-silent, default: false)
+  --raw, -w          Only write stdout and stderr (same as --no-headings --no-summary --silent)
+  --delay            Delay N ms between runs (default: 0)  
 ```
 
 Examples:
@@ -88,7 +89,7 @@ Runs browserify on each file matching `/src/*.js` with output to `/out/*.js`.
 
 TBR
 
-## Recipies
+## Recipes
 
 Coming soon...
 
