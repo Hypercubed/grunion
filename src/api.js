@@ -2,7 +2,7 @@
 
 const path = require('path');
 const globby = require('globby');
-const shell = require('execa').shell;
+const {shell} = require('execa');
 const debug = require('debug')('grunion');
 const template = require('lodash.template');
 const {map, delay} = require('bluebird');
@@ -16,7 +16,7 @@ const defaults = {
   max: 10,
   cache: false,
   output() {},
-  wait: 0
+  delay: 0
 };
 
 const EMPTY = {
@@ -24,9 +24,7 @@ const EMPTY = {
   stderr: ''
 };
 
-module.exports = api;
-
-async function api(input, opts = {}) {
+module.exports = async function grunion(input, opts = {}) {
   opts = {
     ...defaults,
     ...opts
@@ -41,97 +39,84 @@ async function api(input, opts = {}) {
     stripEof: false
   };
 
-  const max = (opts.serial) ? 1 : Number(opts.max);
-  const wait = (opts.wait) ? Number(opts.wait) : 0;
+  const mapOpts = {
+    concurrency: opts.serial ? 1 : Number(opts.max)
+  };
 
-  if (typeof max !== 'number' || max < 1) {
+  if (typeof mapOpts.concurrency !== 'number' || mapOpts.concurrency < 1) {
     throw new Error('Invalid maximum number of children');
   }
+
+  const wait = (opts.delay) ? Number(opts.delay) : 0;
 
   if (typeof wait !== 'number' || wait < 0) {
     throw new Error('Invalid wait time');
   }
 
-  debug('Concurancy set to %s', max);
+  debug('Concurancy set to %s', mapOpts.concurrency);
   debug('Delay between runs set to %s', wait);
-
-  const generateCmd = template(opts.run);
 
   const filepaths = await globby(input, globbyOpts);
 
-  let failed = 0;
-  let success = 0;
-  let aborted = filepaths.length;
-  if (aborted === 0 && !opts.silent) {
+  if (filepaths.length === 0 && !opts.silent) {
     console.error('Nothing to grun');
   }
 
+  const generateCmd = template(opts.run);
+
+  const tasks = filepaths.map(filepath => ({
+    file: {
+      path: filepath,
+      ...path.parse(filepath)
+    },
+    pending: true
+  }));
+
   try {
-    const results = await map(filepaths, grun, {concurrency: max});
-    return {
-      aborted,
-      success,
-      failed,
-      results
-    };
+    const results = await map(tasks, grun, mapOpts);
+    return summarize(results);
   } catch (e) {
-    throw e;
+    throw summarize(tasks);
   }
 
-  async function grun(filepath) {
-    const scope = {
-      file: {
-        path: filepath,
-        ...path.parse(filepath)
-      }
-    };
+  async function grun(task) {
+    task.cmd = generateCmd(task);
+    let result;
 
-    scope.cmd = generateCmd(scope);
-
-    debug('Running %s', scope.cmd);
+    debug('Running %s', task.cmd);
 
     if (opts.dryRun) {
-      success++;
-      aborted--;
-      scope.failed = false;
-      const result = {
+      task.pending = false;
+      task.failed = false;
+      result = {
         ...EMPTY,
-        ...scope
+        ...task
       };
       opts.output(result);
-      debug('Finished dry-run %s', filepath);
-      return result;
-    }
-
-    let result = null;
-    try {
-      result = await shell(scope.cmd, execaOpts);
-      debug('Finished %s', filepath);
-      success++;
-      aborted--;
-      scope.failed = false;
-      result = {
-        ...result,
-        ...scope
-      };
-      opts.output(result);
-    } catch (err) {
-      debug('Failed %s', err);
-      failed++;
-      aborted--;
-      scope.failed = true;
-      result = {
-        ...err,
-        ...scope
-      };
-      opts.output(result);
-      if (opts.failFast) {
-        const state = {
-          aborted,
-          success,
-          failed
+      debug('Finished dry-run %s', task.file.path);
+    } else {
+      try {
+        result = await shell(task.cmd, execaOpts);
+        debug('Finished %s', task.file.path);
+        task.pending = false;
+        task.failed = false;
+        result = {
+          ...result,
+          ...task
         };
-        throw state;
+        opts.output(result);
+      } catch (err) {
+        debug('Failed %s', err);
+        task.pending = false;
+        task.failed = true;
+        result = {
+          ...err,
+          ...task
+        };
+        opts.output(result);
+        if (opts.failFast) {
+          throw opts.cache ? result : task;
+        }
       }
     }
 
@@ -139,6 +124,22 @@ async function api(input, opts = {}) {
       await delay(wait);
     }
 
-    return opts.cache ? result : scope;
+    return opts.cache ? result : task;
   }
+};
+
+function summarize(results) {
+  return results.reduce((p, r) => {
+    p.aborted += Number(r.pending);
+    if (typeof r.failed === 'boolean') {
+      p.failed += Number(r.failed);
+      p.success += Number(!r.failed);
+    }
+    return p;
+  }, {
+    aborted: 0,
+    success: 0,
+    failed: 0,
+    results
+  });
 }

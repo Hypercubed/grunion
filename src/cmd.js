@@ -3,7 +3,7 @@
 
 const debug = require('debug')('grunion');
 const meow = require('meow');
-const api = require('./api.js');
+const api = require('..');
 
 const cli = meow(`
 Usage

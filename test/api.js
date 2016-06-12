@@ -51,14 +51,16 @@ test('grunion - cache', async t => {
   t.deepEqual(r.results.map(d => d.stdout), ['a-pass.js\n', 'b-pass.js\n', 'c-fail.js\n', 'd.js\n']);
 });
 
+// TODO: acutally test delay
 test('grunion - wait', async t => {
-  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', serial: true, wait: 100});
+  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', serial: true, delay: 100});
   t.is(r.success, 4);
   t.is(r.failed, 0);
 });
 
+// TODO: acutally test delay
 test('grunion - wait - max 2', async t => {
-  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', max: 2, wait: 100});
+  const r = await grunion(['./test/fixtures/*.js'], {run: 'echo <%= file.base %>', max: 2, delay: 100});
   t.is(r.success, 4);
   t.is(r.failed, 0);
 });

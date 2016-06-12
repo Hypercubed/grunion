@@ -24,8 +24,8 @@
   "author": "J. Harshbarger",
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.15.1",
-    "babel-cli": "^6.9.0",
+    "ava": "^0.15.2",
+    "babel-cli": "^6.10.1",
     "babel-plugin-transform-async-to-module-method": "^6.8.0",
     "babel-preset-es2015-node4": "^2.1.0",
     "babel-preset-stage-2": "^6.5.0",
@@ -44,7 +44,7 @@
     "bluebird": "^3.4.0",
     "debug": "^2.2.0",
     "execa": "^0.4.0",
-    "globby": "^4.1.0",
+    "globby": "^5.0.0",
     "lodash.template": "^4.2.5",
     "meow": "^3.7.0"
   },
