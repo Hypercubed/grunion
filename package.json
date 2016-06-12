@@ -49,7 +49,7 @@
     "meow": "^3.7.0"
   },
   "engines": {
-    "node": ">=0.12"
+    "node": ">=4"
   },
   "directories": {
     "test": "test"
