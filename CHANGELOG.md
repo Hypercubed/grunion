@@ -2,10 +2,13 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* API: fix delay option
-* Drop support for node < v4
+_(none)_
 
 --------------------
+
+## 1.2.2 (2016-06-12)
+* API: fix delay option
+* Drop support for node < v4
 
 ## 1.2.1 (2016-06-12)
 _(none)_
