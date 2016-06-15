@@ -16,7 +16,12 @@ const defaults = {
   max: 10,
   cache: false,
   output() {},
-  delay: 0
+  delay: 0,
+  globby: {},
+  execa: {
+    preferLocal: true,
+    stripEof: false
+  }
 };
 
 const EMPTY = {
@@ -30,39 +35,29 @@ module.exports = async function grunion(input, opts = {}) {
     ...opts
   };
 
-  const globbyOpts = {
-    // TBD
-  };
-
-  const execaOpts = {
-    preferLocal: opts.local,
-    stripEof: false
-  };
-
-  const mapOpts = {
+  opts.delay = (opts.delay) ? Number(opts.delay) : 0;
+  opts.generateCmd = template(opts.run);
+  opts.execa.preferLocal = opts.local;
+  opts.map = {
     concurrency: opts.serial ? 1 : Number(opts.max)
   };
 
-  if (typeof mapOpts.concurrency !== 'number' || mapOpts.concurrency < 1) {
+  if (typeof opts.map.concurrency !== 'number' || opts.map.concurrency < 1) {
     throw new Error('Invalid maximum number of children');
   }
 
-  const wait = (opts.delay) ? Number(opts.delay) : 0;
-
-  if (typeof wait !== 'number' || wait < 0) {
+  if (typeof opts.delay !== 'number' || opts.delay < 0) {
     throw new Error('Invalid wait time');
   }
 
-  debug('Concurancy set to %s', mapOpts.concurrency);
-  debug('Delay between runs set to %s', wait);
+  debug('Concurancy set to %s', opts.map.concurrency);
+  debug('Delay between runs set to %s', opts.delay);
 
-  const filepaths = await globby(input, globbyOpts);
+  const filepaths = await globby(input, opts.globby);
 
   if (filepaths.length === 0 && !opts.silent) {
     console.error('Nothing to grun');
   }
-
-  const generateCmd = template(opts.run);
 
   const tasks = filepaths.map(filepath => ({
     file: {
@@ -73,58 +68,10 @@ module.exports = async function grunion(input, opts = {}) {
   }));
 
   try {
-    const results = await map(tasks, grun, mapOpts);
+    const results = await map(tasks, task => grun(task, opts), opts.map);
     return summarize(results);
   } catch (e) {
     throw summarize(tasks);
-  }
-
-  async function grun(task) {
-    task.cmd = generateCmd(task);
-    let result;
-
-    debug('Running %s', task.cmd);
-
-    if (opts.dryRun) {
-      task.pending = false;
-      task.failed = false;
-      result = {
-        ...EMPTY,
-        ...task
-      };
-      opts.output(result);
-      debug('Finished dry-run %s', task.file.path);
-    } else {
-      try {
-        result = await shell(task.cmd, execaOpts);
-        debug('Finished %s', task.file.path);
-        task.pending = false;
-        task.failed = false;
-        result = {
-          ...result,
-          ...task
-        };
-        opts.output(result);
-      } catch (err) {
-        debug('Failed %s', err);
-        task.pending = false;
-        task.failed = true;
-        result = {
-          ...err,
-          ...task
-        };
-        opts.output(result);
-        if (opts.failFast) {
-          throw opts.cache ? result : task;
-        }
-      }
-    }
-
-    if (wait && wait > 0) {
-      await delay(wait);
-    }
-
-    return opts.cache ? result : task;
   }
 };
 
@@ -142,4 +89,52 @@ function summarize(results) {
     failed: 0,
     results
   });
+}
+
+async function grun(task, opts) {
+  task.cmd = opts.generateCmd(task);
+  let result;
+
+  debug('Running %s', task.cmd);
+
+  if (opts.dryRun) {
+    task.pending = false;
+    task.failed = false;
+    result = {
+      ...EMPTY,
+      ...task
+    };
+    opts.output(result);
+    debug('Finished dry-run %s', task.file.path);
+  } else {
+    try {
+      result = await shell(task.cmd, opts.execa);
+      debug('Finished %s', task.file.path);
+      task.pending = false;
+      task.failed = false;
+      result = {
+        ...result,
+        ...task
+      };
+      opts.output(result);
+    } catch (err) {
+      debug('Failed %s', err);
+      task.pending = false;
+      task.failed = true;
+      result = {
+        ...err,
+        ...task
+      };
+      opts.output(result);
+      if (opts.failFast) {
+        throw opts.cache ? result : task;
+      }
+    }
+  }
+
+  if (opts.delay && opts.delay > 0) {
+    await delay(opts.delay);
+  }
+
+  return opts.cache ? result : task;
 }
