@@ -6,6 +6,9 @@ _(none)_
 
 --------------------
 
+## 1.2.3 (2016-06-15)
+_(none)_
+
 ## 1.2.2 (2016-06-12)
 * API: fix delay option
 * Drop support for node < v4
