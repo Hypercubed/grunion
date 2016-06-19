@@ -3,9 +3,8 @@
 const path = require('path');
 const globby = require('globby');
 const {shell} = require('execa');
-const debug = require('debug')('grunion');
 const template = require('lodash.template');
-const {map, delay} = require('bluebird');
+const {mapSeries, map, delay} = require('bluebird');
 
 // API defaults, may be different from CLI defaults
 const defaults = {
@@ -16,6 +15,7 @@ const defaults = {
   max: 10,
   cache: false,
   output() {},
+  outputBefore() {},
   delay: 0,
   globby: {},
   execa: {
@@ -23,6 +23,21 @@ const defaults = {
     stripEof: false
   }
 };
+
+/* {
+  'run': 'node <%= file.path %>',
+  'serial': false,
+  'local': true,
+  'fail-fast': false,
+  'dry-run': false,
+  'max': 10,
+  'silent': false,
+  'headings': true,
+  'summary': true,
+  'raw': false,
+  'delay': 0,
+  'spinner': true
+} */
 
 const EMPTY = {
   stdout: '',
@@ -50,9 +65,6 @@ module.exports = async function grunion(input, opts = {}) {
     throw new Error('Invalid wait time');
   }
 
-  debug('Concurancy set to %s', opts.map.concurrency);
-  debug('Delay between runs set to %s', opts.delay);
-
   const filepaths = await globby(input, opts.globby);
 
   if (filepaths.length === 0 && !opts.silent) {
@@ -68,7 +80,8 @@ module.exports = async function grunion(input, opts = {}) {
   }));
 
   try {
-    const results = await map(tasks, task => grun(task, opts), opts.map);
+    const _map = opts.map.concurrency > 1 ? map : mapSeries;
+    const results = await _map(tasks, task => grun(task, opts, tasks), opts.map);
     return summarize(results);
   } catch (e) {
     throw summarize(tasks);
@@ -87,29 +100,28 @@ function summarize(results) {
     aborted: 0,
     success: 0,
     failed: 0,
-    results
+    results: results
   });
 }
 
-async function grun(task, opts) {
+async function grun(task, opts, tasks) {
   task.cmd = opts.generateCmd(task);
   let result;
 
-  debug('Running %s', task.cmd);
+  opts.outputBefore(task, tasks);
 
   if (opts.dryRun) {
     task.pending = false;
     task.failed = false;
     result = {
       ...EMPTY,
-      ...task
+      ...task,
+      dryrun: true
     };
     opts.output(result);
-    debug('Finished dry-run %s', task.file.path);
   } else {
     try {
       result = await shell(task.cmd, opts.execa);
-      debug('Finished %s', task.file.path);
       task.pending = false;
       task.failed = false;
       result = {
@@ -118,7 +130,6 @@ async function grun(task, opts) {
       };
       opts.output(result);
     } catch (err) {
-      debug('Failed %s', err);
       task.pending = false;
       task.failed = true;
       result = {

@@ -8,7 +8,7 @@ const bin = './dist/cmd.js';
 test('grunion - pass', async t => {
   const result = await execa(
     bin,
-    ['./test/fixtures/*-pass.js'],
+    ['./test/fixtures/quick/*-pass.js'],
     {preferLocal: true}
   );
   t.regex(result.stdout, /ahhh/);
@@ -20,7 +20,7 @@ test('grunion - pass', async t => {
 test('grunion - fail', async t => {
   try {
     await execa(bin,
-     ['./test/fixtures/*.js'],
+     ['./test/fixtures/quick/*.js'],
      {preferLocal: true}
    );
     t.fail();
@@ -36,7 +36,7 @@ test('grunion - fail - fail-fast', async t => {
   try {
     await execa(
       bin,
-      ['./test/fixtures/*.js', '--fail-fast'],
+      ['./test/fixtures/quick/*.js', '--fail-fast'],
       {preferLocal: true}
     );
     t.fail();
@@ -48,7 +48,7 @@ test('grunion - fail - fail-fast', async t => {
 test('grunion - pass - babel-node', async t => {
   const result = await execa(
     bin,
-    ['./test/fixtures/*-pass.js', '--run', 'babel-node <%= file.path %>'],
+    ['./test/fixtures/quick/*-pass.js', '--run', 'babel-node <%= file.path %>'],
     {preferLocal: true}
   );
   t.regex(result.stdout, /ahhh/);
@@ -61,7 +61,7 @@ test('grunion - fail - babel-node', async t => {
   try {  // returns error
     await execa(
       bin,
-      ['./test/fixtures/*.js', '--run', 'babel-node <%= file.path %>'],
+      ['./test/fixtures/quick/*.js', '--run', 'babel-node <%= file.path %>'],
       {preferLocal: true}
     );
     t.fail();
@@ -77,7 +77,7 @@ test('grunion - fail - fail-fast babel-node', async t => {
   try {
     await execa(
       bin,
-      ['./test/fixtures/*.js', '--run', 'babel-node <%= file.path %>', '--fail-fast'],
+      ['./test/fixtures/quick/*.js', '--run', 'babel-node <%= file.path %>', '--fail-fast'],
       {preferLocal: true}
     );
     t.fail();
@@ -89,23 +89,23 @@ test('grunion - fail - fail-fast babel-node', async t => {
 test('grunion - echo', async t => {
   const result = await execa(
     bin,
-    ['./test/fixtures/*.js', '--run', 'echo <%= file.path %>'],
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>'],
     {preferLocal: true}
   );
-  t.regex(result.stdout, /.\/test\/fixtures\/a-pass\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/b-pass\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/c-fail\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/d\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/a-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/b-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
 });
 
 test('grunion - echo - serial', async t => {
   const result = await execa(
     bin,
-    ['./test/fixtures/*.js', '--run', 'echo <%= file.path %>', '--serial'],
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>', '--serial'],
     {preferLocal: true}
   );
-  t.regex(result.stdout, /.\/test\/fixtures\/a-pass\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/b-pass\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/c-fail\.js/);
-  t.regex(result.stdout, /.\/test\/fixtures\/d\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/a-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/b-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
 });

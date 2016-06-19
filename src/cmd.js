@@ -3,7 +3,10 @@
 
 const debug = require('debug')('grunion');
 const meow = require('meow');
-const api = require('..');
+const ora = require('ora');
+const figures = require('figures');
+
+const api = require('./api');
 
 const cli = meow(`
 Usage
@@ -42,7 +45,8 @@ Examples
       'headings': true,
       'summary': true,
       'raw': false,
-      'delay': 0
+      'delay': 0,
+      'spinner': true
     },
     string: [
       '_',
@@ -58,7 +62,8 @@ Examples
       'silent',
       'headings',
       'summary',
-      'raw'
+      'raw',
+      'spinner'
     ],
     alias: {
       s: 'serial',
@@ -72,27 +77,87 @@ const LF = '\n';
 debug('Debugging enabled');
 
 const opts = Object.assign({
-  output
+  output,
+  outputBefore
 }, cli.flags);
 
 if (opts.raw) {
   opts.headings = false;
   opts.summary = false;
   opts.silent = false;
+  opts.spinner = false;
 }
 
-function output(result) {
+opts.max = opts.serial ? 1 : Number(opts.max);
+opts.delay = (opts.delay) ? Number(opts.delay) : 0;
+
+const spinner = opts.spinner ? ora('Grunning').start() : null;
+
+debug('Concurancy set to %s', opts.max);
+debug('Delay between runs set to %s', opts.delay);
+
+api(cli.input, opts)
+  .then(r => {
+    outputSumary(r);
+    exit(r.failed > 0 ? 1 : 0);
+  })
+  .catch(r => {
+    outputSumary(r);
+    exit(1);
+  });
+
+function outputBefore(task, tasks) {
+  if (spinner) {
+    spinner.clear();
+  }
+  debug('Grunning %s', task.cmd);
+  if (spinner) {
+    const index = tasks.indexOf(task) + 1;
+    spinner.text = `Grunning #${index}/${tasks.length} ${figures.pointer} ${task.cmd}`;
+    spinner.render();
+  }
+}
+
+function output(task) {
+  if (spinner) {
+    spinner.clear();
+  }
+
+  const sym = getSymbol(task);
+
+  if (debug.enabled) {
+    if (task.dryrun) {
+      debug('%s Finished dry-run %s', sym, task.file.path);
+    } else if (task.failed) {
+      debug('%s Failed running %s', sym, task.file.path);
+    } else {
+      debug('%s Finished running %s', sym, task.file.path);
+    }
+  }
+
   if (opts.headings) {
+    process.stdout.write(`${figures.pointer} ${task.file.path}`);
     process.stdout.write(LF);
-    process.stdout.write(`> ${result.file.path}`);
-    process.stdout.write(LF);
-    process.stdout.write(`> ${result.cmd}`);
-    process.stdout.write(LF + LF);
   }
   if (!opts.silent) {
-    process.stdout.write(clean(result.stdout));
-    process.stderr.write(clean(result.stderr));
+    process.stdout.write(LF);
+    process.stdout.write(clean(task.stdout));
+    process.stderr.write(clean(task.stderr));
+    process.stdout.write(LF);
   }
+  if (opts.headings) {
+    process.stdout.write(`${sym} ${task.cmd}`);
+    process.stdout.write(LF + LF);
+  }
+}
+
+function getSymbol(result) {
+  if (result.pending) {
+    return figures.pointer;
+  } else if (result.failed) {
+    return figures.cross;
+  }
+  return figures.tick;
 }
 
 function clean(text) {
@@ -103,6 +168,7 @@ function clean(text) {
 }
 
 function outputSumary(state) {
+  spinner.stop();
   if (opts.summary) {
     process.stdout.write(`${LF} - ${state.success} passed`);
     process.stdout.write(`${LF} - ${state.failed} failed`);
@@ -122,13 +188,3 @@ function exit(code) {
     }, 500);
   }
 }
-
-api(cli.input, opts)
-  .then(r => {
-    outputSumary(r);
-    exit(r.failed > 0 ? 1 : 0);
-  })
-  .catch(r => {
-    outputSumary(r);
-    exit(1);
-  });

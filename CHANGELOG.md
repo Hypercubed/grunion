@@ -2,7 +2,10 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* CLI: added progress spinner
+* CLI: improve success/fail output
+* API: Added outputBefore option
+* API: Guarantee order for serial
 
 --------------------
 
