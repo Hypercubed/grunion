@@ -83,7 +83,7 @@ module.exports = async function grunion(input, opts = {}) {
     const _map = opts.map.concurrency > 1 ? map : mapSeries;
     const results = await _map(tasks, task => grun(task, opts, tasks), opts.map);
     return summarize(results);
-  } catch (e) {
+  } catch (err) {
     throw summarize(tasks);
   }
 };

@@ -24,11 +24,11 @@ test('grunion - fail', async t => {
      {preferLocal: true}
    );
     t.fail();
-  } catch (result) {
-    t.regex(result.stdout, /ahhh/);
-    t.regex(result.stdout, /boo/);
-    t.false(/crap/.test(result.stdout));
-    t.false(/damn/.test(result.stdout));
+  } catch (err) {
+    t.regex(err.stdout, /ahhh/);
+    t.regex(err.stdout, /boo/);
+    t.false(/crap/.test(err.stdout));
+    t.false(/damn/.test(err.stdout));
   }
 });
 
@@ -40,7 +40,7 @@ test('grunion - fail - fail-fast', async t => {
       {preferLocal: true}
     );
     t.fail();
-  } catch (e) {
+  } catch (err) {
     t.pass();
   }
 });
@@ -65,11 +65,11 @@ test('grunion - fail - babel-node', async t => {
       {preferLocal: true}
     );
     t.fail();
-  } catch (result) {
-    t.regex(result.stdout, /ahhh/);
-    t.regex(result.stdout, /boo/);
-    t.false(/crap/.test(result.stdout));
-    t.regex(result.stdout, /damn/);
+  } catch (err) {
+    t.regex(err.stdout, /ahhh/);
+    t.regex(err.stdout, /boo/);
+    t.false(/crap/.test(err.stdout));
+    t.regex(err.stdout, /damn/);
   }
 });
 
@@ -81,8 +81,8 @@ test('grunion - fail - fail-fast babel-node', async t => {
       {preferLocal: true}
     );
     t.fail();
-  } catch (result) {
-    t.regex(result.stderr, /Cannot read property 'is' of undefined/);
+  } catch (err) {
+    t.regex(err.stderr, /Cannot read property 'is' of undefined/);
   }
 });
 

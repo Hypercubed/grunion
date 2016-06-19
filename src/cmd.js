@@ -101,8 +101,8 @@ api(cli.input, opts)
     outputSumary(r);
     exit(r.failed > 0 ? 1 : 0);
   })
-  .catch(r => {
-    outputSumary(r);
+  .catch(err => {
+    outputSumary(err);
     exit(1);
   });
 

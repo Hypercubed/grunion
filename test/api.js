@@ -13,10 +13,10 @@ test('grunion - all - fail-fast', async t => {
   try {
     await grunion(['./test/fixtures/quick/*.js'], {failFast: true, serial: true});
     t.fail();
-  } catch (r) {
-    t.is(r.failed, 1);
-    t.is(r.success, 2);
-    t.is(r.aborted, 1);
+  } catch (err) {
+    t.is(err.failed, 1);
+    t.is(err.success, 2);
+    t.is(err.aborted, 1);
   }
 });
 
