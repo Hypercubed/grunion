@@ -2,12 +2,15 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
+_(none)_
+
+--------------------
+
+## 1.3.0 (2016-06-19)
 * CLI: added progress spinner
 * CLI: improve success/fail output
 * API: Added onStart option
 * API: Guarantee order for serial
-
---------------------
 
 ## 1.2.3 (2016-06-15)
 _(none)_
