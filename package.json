@@ -7,39 +7,45 @@
   "bin": {
     "grunion": "bin/grunion"
   },
-  "files": [
-    "dist",
-    "src",
-    "bin"
-  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "scripts": {
-    "pretest": "xo && npm run build",
-    "test": "ava",
+    "pretest": "npm run build",
+    "test": "xo && ava",
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "build": "babel src -d dist",
     "prepublish": "npm run build",
     "version": "chg release -y && git add -A CHANGELOG.md"
   },
-  "author": "J. Harshbarger",
+  "files": [
+    "dist",
+    "src",
+    "bin"
+  ],
   "license": "MIT",
-  "devDependencies": {
-    "ava": "^0.15.2",
-    "babel-cli": "^6.10.1",
-    "babel-plugin-transform-async-to-module-method": "^6.8.0",
-    "babel-preset-es2015-node4": "^2.1.0",
-    "babel-preset-stage-2": "^6.5.0",
-    "babel-register": "^6.9.0",
-    "chg": "^0.3.2",
-    "rimraf": "^2.5.2",
-    "xo": "^0.15.1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hypercubed/grunion.git"
   },
+  "homepage": "https://github.com/Hypercubed/grunion#readme",
+  "bugs": {
+    "url": "https://github.com/Hypercubed/grunion/issues"
+  },
+  "author": "J. Harshbarger",
   "xo": {
     "space": 2,
     "envs": [
       "node"
     ]
   },
+  "keywords": [
+    "glob",
+    "node",
+    "run",
+    "test"
+  ],
   "dependencies": {
     "bluebird": "^3.4.0",
     "debug": "^2.2.0",
@@ -48,30 +54,24 @@
     "lodash.template": "^4.2.5",
     "meow": "^3.7.0"
   },
-  "engines": {
-    "node": ">=4.0.0"
+  "devDependencies": {
+    "ava": "*",
+    "babel-cli": "^6.10.1",
+    "babel-plugin-transform-async-to-module-method": "^6.8.0",
+    "babel-preset-es2015-node4": "^2.1.0",
+    "babel-preset-stage-2": "^6.5.0",
+    "babel-register": "^6.9.0",
+    "chg": "^0.3.2",
+    "rimraf": "^2.5.2",
+    "xo": "*"
   },
   "directories": {
     "test": "test"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Hypercubed/grunion.git"
-  },
-  "keywords": [
-    "glob",
-    "node",
-    "run",
-    "test"
-  ],
   "ava": {
     "require": [
       "babel-register"
     ],
     "babel": "inherit"
-  },
-  "bugs": {
-    "url": "https://github.com/Hypercubed/grunion/issues"
-  },
-  "homepage": "https://github.com/Hypercubed/grunion#readme"
+  }
 }
