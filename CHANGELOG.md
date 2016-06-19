@@ -4,7 +4,7 @@ CHANGELOG
 ## HEAD (Unreleased)
 * CLI: added progress spinner
 * CLI: improve success/fail output
-* API: Added outputBefore option
+* API: Added onStart option
 * API: Guarantee order for serial
 
 --------------------

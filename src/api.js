@@ -15,7 +15,7 @@ const defaults = {
   max: 10,
   cache: false,
   output() {},
-  outputBefore() {},
+  onStart() {},
   delay: 0,
   globby: {},
   execa: {
@@ -81,10 +81,56 @@ module.exports = async function grunion(input, opts = {}) {
 
   try {
     const _map = opts.map.concurrency > 1 ? map : mapSeries;
-    const results = await _map(tasks, task => grun(task, opts, tasks), opts.map);
+    const results = await _map(tasks, grun, opts.map);
     return summarize(results);
   } catch (err) {
     throw summarize(tasks);
+  }
+
+  async function grun(task, index) {
+    task.cmd = opts.generateCmd(task);
+    let result;
+
+    opts.onStart(task, index, tasks);
+
+    if (opts.dryRun) {
+      task.pending = false;
+      task.failed = false;
+      result = {
+        ...EMPTY,
+        ...task,
+        dryrun: true
+      };
+      opts.output(result, index, tasks);
+    } else {
+      try {
+        result = await shell(task.cmd, opts.execa);
+        task.pending = false;
+        task.failed = false;
+        result = {
+          ...result,
+          ...task
+        };
+        opts.output(result, index, tasks);
+      } catch (err) {
+        task.pending = false;
+        task.failed = true;
+        result = {
+          ...err,
+          ...task
+        };
+        opts.output(result, index, tasks);
+        if (opts.failFast) {
+          throw opts.cache ? result : task;
+        }
+      }
+    }
+
+    if (opts.delay && opts.delay > 0) {
+      await delay(opts.delay);
+    }
+
+    return opts.cache ? result : task;
   }
 };
 
@@ -102,50 +148,4 @@ function summarize(results) {
     failed: 0,
     results: results
   });
-}
-
-async function grun(task, opts, tasks) {
-  task.cmd = opts.generateCmd(task);
-  let result;
-
-  opts.outputBefore(task, tasks);
-
-  if (opts.dryRun) {
-    task.pending = false;
-    task.failed = false;
-    result = {
-      ...EMPTY,
-      ...task,
-      dryrun: true
-    };
-    opts.output(result);
-  } else {
-    try {
-      result = await shell(task.cmd, opts.execa);
-      task.pending = false;
-      task.failed = false;
-      result = {
-        ...result,
-        ...task
-      };
-      opts.output(result);
-    } catch (err) {
-      task.pending = false;
-      task.failed = true;
-      result = {
-        ...err,
-        ...task
-      };
-      opts.output(result);
-      if (opts.failFast) {
-        throw opts.cache ? result : task;
-      }
-    }
-  }
-
-  if (opts.delay && opts.delay > 0) {
-    await delay(opts.delay);
-  }
-
-  return opts.cache ? result : task;
 }

@@ -78,7 +78,7 @@ debug('Debugging enabled');
 
 const opts = Object.assign({
   output,
-  outputBefore
+  onStart
 }, cli.flags);
 
 if (opts.raw) {
@@ -106,19 +106,18 @@ api(cli.input, opts)
     exit(1);
   });
 
-function outputBefore(task, tasks) {
+function onStart(task, index, tasks) {
   if (spinner) {
     spinner.clear();
   }
   debug('Grunning %s', task.cmd);
   if (spinner) {
-    const index = tasks.indexOf(task) + 1;
-    spinner.text = `Grunning #${index}/${tasks.length} ${figures.pointer} ${task.cmd}`;
+    spinner.text = `Grunning #${index + 1}/${tasks.length} ${figures.pointer} ${task.cmd}`;
     spinner.render();
   }
 }
 
-function output(task) {
+function output(task, index, tasks) {
   if (spinner) {
     spinner.clear();
   }
@@ -148,6 +147,11 @@ function output(task) {
   if (opts.headings) {
     process.stdout.write(`${sym} ${task.cmd}`);
     process.stdout.write(LF + LF);
+  }
+
+  if (spinner) {
+    spinner.text = count(tasks);
+    spinner.render();
   }
 }
 
@@ -187,4 +191,21 @@ function exit(code) {
       process.exit(code);
     }, 500);
   }
+}
+
+function count(tasks) {
+  const summary = tasks.reduce((p, r) => {
+    p.pending += Number(r.pending);
+    if (typeof r.failed === 'boolean') {
+      p.failed += Number(r.failed);
+      p.finished += Number(!r.finished);
+    }
+    return p;
+  }, {
+    pending: 0,
+    finished: 0,
+    failed: 0
+  });
+
+  return `pending: ${summary.pending}, finished: ${summary.finished}, failed: ${summary.failed}`;
 }
