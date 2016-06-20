@@ -126,7 +126,7 @@ function output(task, index, tasks) {
   const sym = getSymbol(task);
 
   if (debug.enabled) {
-    if (task.dryrun) {
+    if (task.dryRun) {
       debug('%s Finished dry-run %s', sym, task.file.path);
     } else if (task.failed) {
       debug('%s Failed running %s', sym, task.file.path);

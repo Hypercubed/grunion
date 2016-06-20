@@ -17,7 +17,9 @@
     "prebuild": "npm run clean",
     "build": "babel src -d dist",
     "prepublish": "npm run build",
-    "version": "chg release -y && git add -A CHANGELOG.md"
+    "version": "chg release -y && git add -A CHANGELOG.md",
+    "coverage": "nyc -r=lcov -r=text -- ava",
+    "precoverage": "babel src -d dist --source-maps inline"
   },
   "files": [
     "dist",
@@ -64,6 +66,7 @@
     "babel-preset-stage-2": "^6.5.0",
     "babel-register": "^6.9.0",
     "chg": "^0.3.2",
+    "nyc": "^6.6.1",
     "rimraf": "^2.5.2",
     "xo": "*"
   },

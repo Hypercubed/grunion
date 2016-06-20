@@ -109,3 +109,52 @@ test('grunion - echo - serial', async t => {
   t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
   t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
 });
+
+test('grunion - echo - raw', async t => {
+  const result = await execa(
+    bin,
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>', '--raw'],
+    {preferLocal: true}
+  );
+  t.regex(result.stdout, /\n.\/test\/fixtures\/quick\/a-pass\.js\n/);
+  t.regex(result.stdout, /\n.\/test\/fixtures\/quick\/b-pass\.js\n/);
+  t.regex(result.stdout, /\n.\/test\/fixtures\/quick\/c-fail\.js\n/);
+  t.regex(result.stdout, /\n.\/test\/fixtures\/quick\/d\.js\n/);
+});
+
+test('grunion - echo - silent', async t => {
+  const result = await execa(
+    bin,
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>', '--silent'],
+    {preferLocal: true}
+  );
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/a-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/b-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
+});
+
+test('grunion - echo - dry', async t => {
+  const result = await execa(
+    bin,
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>', '--dry-run'],
+    {preferLocal: true}
+  );
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/a-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/b-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
+});
+
+test('grunion - echo - debug', async t => {
+  process.env.DEBUG = '*';
+  const result = await execa(
+    bin,
+    ['./test/fixtures/quick/*.js', '--run', 'echo <%= file.path %>'],
+    {preferLocal: true}
+  );
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/a-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/b-pass\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/c-fail\.js/);
+  t.regex(result.stdout, /.\/test\/fixtures\/quick\/d\.js/);
+});

@@ -99,7 +99,7 @@ module.exports = async function grunion(input, opts = {}) {
       result = {
         ...EMPTY,
         ...task,
-        dryrun: true
+        dryRun: true
       };
       opts.output(result, index, tasks);
     } else {
