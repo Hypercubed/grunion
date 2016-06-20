@@ -2,9 +2,12 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-* CLI: fixed error with --no-spinner option
+_(none)_
 
 --------------------
+
+## 1.3.1 (2016-06-20)
+* CLI: fixed error with --no-spinner option
 
 ## 1.3.0 (2016-06-19)
 * CLI: added progress spinner
