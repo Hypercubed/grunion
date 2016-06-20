@@ -2,7 +2,7 @@ CHANGELOG
 =========
 
 ## HEAD (Unreleased)
-_(none)_
+* CLI: fixed error with --no-spinner option
 
 --------------------
 
